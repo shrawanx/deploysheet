@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Django Deployment Cheat Sheet</title>
+    <link rel="stylesheet" href="https://bootswatch.com/4/yeti/bootstrap.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+            integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+            crossorigin="anonymous"></script>
+    <script src="assets/prism.js"></script>
+    <link rel="stylesheet" href="assets/prism.css"/>
+</head>
+<body>
+
+<div class="container">
+    <div class="alert alert-dismissible alert-info mt-3">
+        <button type="button" class="close" data-dismiss="alert">&times;</button>
+        <strong>This is a Personal Project and is written for my own need</strong>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <form class="mt-3">
+                <fieldset>
+                    <legend>Server Deployment Cheat Sheet</legend>
+                    <div id="inputWithServerIPandUser">
+                        <div class="form-group">
+                            <label for="InputServerIP">Server address</label>
+                            <input type="text" class="form-control" id="serverIP" aria-describedby="serverIPHelp"
+                                   placeholder="Enter Server IP">
+                            <small id="serverIPHelp" class="form-text text-muted">Your Server Public IP</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="InputServerUser">Server User</label>
+                            <input type="text" class="form-control" id="serverUser" aria-describedby="serverUserHelp"
+                                   placeholder="Enter Server User: Ubuntu Default" value="ubuntu" disabled>
+                            <small id="serverUserHelp" class="form-text text-muted">Your Server User</small>
+                        </div>
+                    </div>
+                    <div id="inputWithServerAlias">
+                        <div class="form-group">
+                            <label for="InputServerAlias">Server Alias</label>
+                            <input type="text" class="form-control" id="serverAlias" aria-describedby="serverAliasHelp"
+                                   placeholder="Enter Server Alias">
+                            <small id="serverAliasHelp" class="form-text text-muted">Alias for your user as stated on
+                                <span style="">~/.ssh/config</span></small>
+                        </div>
+                    </div>
+                    <div class="custom-control custom-switch">
+                        <input type="checkbox" class="custom-control-input" id="toggleSwitch">
+                        <label class="custom-control-label" for="toggleSwitch" id="toggleSwitchHelp"></label>
+                    </div>
+                    <button type="button" class="btn btn-primary mt-2" id="btnGenerateScript">Generate Script</button>
+                </fieldset>
+            </form>
+
+        </div>
+
+        <div class="col-md-6" id="createAlias">
+            <form class="mt-3">
+                <fieldset>
+                    <legend>SSH Alias Generator</legend>
+                    <div id="inputServerAlias">
+                        <div class="form-group">
+                            <label for="inputServerAlias">Host Identity</label>
+                            <input type="text" class="form-control" id="hostIdentify" aria-describedby="serverHostAlias"
+                                   placeholder="Enter Server Alias">
+                            <small id="serverHostAlias" class="form-text text-muted">Any Name which you like :D </small>
+                        </div>
+                    </div>
+                    <div id="inputWithKeyFileLocation">
+                        <div class="form-group">
+                            <label for="InputServerIP">Key File Location</label>
+                            <input type="text" class="form-control" id="keyFileLocation" aria-describedby="keyFileHelp"
+                                   placeholder="Enter key File location">
+                            <small id="keyFileHelp" class="form-text text-muted">Your key file path eg:
+                                ~/.ssh/keys/server.pem</small>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-primary" data-toggle="modal" id="aliasGeneratingModel"
+                            data-target="#modalForGeneratingServerAlias">
+                        Generate Alias Config
+                    </button>
+                </fieldset>
+            </form>
+        </div>
+    </div>
+
+</div>
+<div class="container" id="serverDeplymentScript" hidden>
+    <div class="row">
+        <div class="col-md-7 mt-4">
+            <h2>Install Postgres on Server</h2>
+            <div class="helps">
+                <a href="https://www.digitalocean.com/community/tutorials/how-to-install-and-use-postgresql-on-ubuntu-18-04">
+                    How To Install and Use PostgreSQL on Ubuntu 18.04
+                </a> [digitalocean.com]
+            </div>
+            <pre>
+                <code class="language-shell">
+sudo apt update
+sudo apt install postgresql postgresql-contrib</code>
+            </pre>
+        </div>
+        <div class="col-md-5 mt-4">
+            <h2>On Your Machine </h2>
+            <div class="helps">
+                <a href="https://help.github.com/en/github/using-git/adding-a-remote">
+                    Adding a Remote on Git
+                </a> [github.com]
+            </div>
+            <pre>
+<code class="language-shell" id="setupGitRemoteOnClient">
+git remote add server ubuntu:/home/ubuntu/repo.git/ &&git push server --all</code>
+            </pre>
+        </div>
+        <div class="col-md-12">
+            <h2>Install Git Nginx and other Tools </h2>
+            <div class="helps">
+
+            </div>
+            <pre>
+                <code class="language-shell">
+sudo apt-get install -y nginx git make build-essential libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev wget curl llvm libncurses5-dev libncursesw5-dev xz-utils python-setuptools</code>
+            </pre>
+        </div>
+
+        <div class="col-md-12">
+            <h2>Setting Up folders and Remote Repo </h2>
+            <div class="helps">
+
+            </div>
+            <pre>
+                <code class="language-shell">
+mkdir repo.git app conf logs media static
+cd repo.git</code></pre>
+            <pre><code class="language-shell">
+# create a bare repo
+git init --bare
+git --bare update-server-info
+git config core.bare false
+git config receive.denycurrentbranch ignore
+git config core.worktree /home/ubuntu/app/</code></pre>
+            <pre><code class="language-shell">
+cat > hooks/post-receive &lt;&lt;EOF
+#!/bin/sh
+git checkout -f
+EOF</code></pre>
+            <pre><code class="language-shell">
+chmod +x hooks/post-receive
+</code></pre>
+        </div>
+        <div class="col-md-12">
+            <h2>Setting Up Virtual Env and Install Server Dependency</h2>
+            <div class="helps">
+            </div>
+            <pre>
+                <code class="language-shell">
+sudo apt-get install python3-venv libcairo2
+sudo apt-get install build-essential libssl-dev libffi-dev python-dev
+sudo apt-get install python3-pip python3-setuptools python3-wheel
+sudo apt-get install libpango-1.0-0 libpangocairo-1.0-0 libgdk-pixbuf2.0-0 shared-mime-info
+sudo apt-get install python3-dev python3-cffi
+python3 -m venv env</code>
+            </pre>
+            <h3>Activate Virtual Env</h3>
+            <pre>
+                <code class="language-shell">
+source env/bin/activate</code>
+            </pre>
+            <h3>Install Circus and Chaussette</h3>
+            <pre>
+                <code class="language-shell">
+pip install circus
+pip install chaussette
+cd conf
+nano circus.ini</code>
+            </pre>
+            <h3>add this to circus.ini</h3>
+            <pre>
+                <code class="language-shell">
+[watcher:webapp]
+cmd = chaussette --fd $(circus.sockets.webapp) config.wsgi.application # django setting location
+uid=ubuntu
+endpoint_owner=ubuntu
+numprocesses = 3
+use_sockets = True
+copy_env = True
+copy_path = True
+virtualenv = /home/ubuntu/env/
+stdout_stream.class = FileStream
+stdout_stream.filename = /home/ubuntu/logs/app.log
+stderr_stream.class = FileStream
+stderr_stream.filename = /home/ubuntu/logs/app_err.log
+
+stdout_stream.max_bytes = 1073741824
+stdout_stream.backup_count = 3
+stderr_stream.max_bytes = 1073741824
+stderr_stream.backup_count = 3
+
+[socket:webapp]
+host = 127.0.0.1
+port = 8085
+
+[env:webapp]
+PYTHONPATH=/home/ubuntu/app/</code>
+            </pre>
+            <h3>Run and demonize circus.ini</h3>
+            <pre>
+                <code class="language-shell">
+circusd --daemon circus.ini
+circusctl reloadconfig
+circusctl reload</code>
+            </pre>
+        </div>
+        <div class="col-md-12">
+            <h2>Add Nginx Config </h2>
+            <div class="helps">
+
+            </div>
+            <pre>
+                <code class="language-shell">
+nano nginx.conf  # current location is ~/conf/</code>
+            </pre>
+            <pre>
+                <code class="language-shell">
+upstream django {
+    server 127.0.0.1:8085; # for a web port socket see circus.ini [socket:webapp]
+}
+
+# configuration of the server
+server {
+
+    # the port your site will be served on
+    listen 80;
+
+    # the domain name it will serve for
+    # server_name demo.example.com;
+    charset     utf-8;
+
+    client_max_body_size 75M;
+
+    location /static/ {
+            alias /home/ubuntu/static/;
+    }
+
+    location /media/ {
+        alias /home/ubuntu/media/;
+    }
+
+    location / {
+        proxy_pass http://django;
+        proxy_pass_header Server;
+        proxy_set_header Host $host;
+        proxy_redirect off;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Scheme $scheme;
+        proxy_connect_timeout 600;
+        proxy_send_timeout 600;
+        proxy_read_timeout 600;
+    }
+}</code></pre>
+            <h3>Add nginx config to /etc/nginx/nginx.conf</h3>
+            <pre>
+                  <code class="language-shell">
+nano /etc/nginx/nginx.conf
+# include your nginx conf
+# include /home/ubuntu/conf/nginx.conf;
+                  </code></pre>
+            <h3>Test config and restart the server</h3>
+            <pre>
+                  <code class="language-shell">
+sudo nginx -t    # test should be successful
+sudo systemctl restart nginx  # restart the server
+                  </code></pre>
+        </div>
+
+    </div>
+</div>
+<!-- Modal for alias generation -->
+<div class="modal fade" id="modalForGeneratingServerAlias" tabindex="-1"
+     role="dialog" aria-labelledby="modalForGeneratingServerAlias"
+     aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Sever Alias</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                    <pre>
+                        <code class="language-shell" id="serverAliasCode">
+
+                        </code>
+                    </pre>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+<script>
+    let configureWithServerIPHelp = 'Toggle to Configure with Server IP and User instead'
+    let configureWithServerAlias = 'Toggle to Configure With Server Alias Instead'
+    $(function () {
+        $('#toggleSwitchHelp').text(configureWithServerIPHelp)
+        $('#inputWithServerIPandUser').attr('hidden', true)
+        $('#createAlias').attr('hidden', true)
+
+        $("#aliasGeneratingModel").click(function () {
+            let serverIp = $('#serverIP').val()
+            let serverUser = $('#serverUser').val()
+            let keyLocation = $('#keyFileLocation').val()
+            let hostIdentify = $('#hostIdentify').val()
+            let aliasGeneratingCode = "\n" +
+                "nano ~/.ssh/config\n" +
+                "# append the following\n" +
+                "\n" +
+                `Host ${hostIdentify} \n` +
+                `    HostName ${serverIp}\n` +
+                `    User ${serverUser}\n` +
+                `    IdentityFile ${keyLocation}`
+            $("#modalForGeneratingServerAlias #serverAliasCode").text(aliasGeneratingCode);
+            Prism.highlightElement($('#serverAliasCode')[0]);
+        })
+    })
+    $('#toggleSwitch').change(function () {
+        if ($(this).prop('checked') === true) {
+            $('#toggleSwitchHelp').text(configureWithServerAlias)
+            $('#inputWithServerAlias').attr('hidden', true)
+            $('#inputWithServerIPandUser').attr('hidden', false)
+            $('#createAlias').attr('hidden', false)
+
+        } else {
+            $('#toggleSwitchHelp').text(configureWithServerIPHelp)
+            $('#inputWithServerIPandUser').attr('hidden', true)
+            $('#createAlias').attr('hidden', true)
+            $('#inputWithServerAlias').attr('hidden', false)
+        }
+    })
+
+</script>
+<script src="assets/deployment.js"></script>
+</html>
