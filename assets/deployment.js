@@ -1,4 +1,4 @@
-$('#btnGenerateScript').click(function () {
+function collectAndPrepare(clientMachineID, containerID) {
     let serverIp = $('#serverIP').val()
     let serverUser = $('#serverUser').val()
     let serverAlias = $('#serverAlias').val()
@@ -16,9 +16,19 @@ $('#btnGenerateScript').click(function () {
         let setupGitRemoteOnClient = `
 git remote add server ${fullURL}:/home/ubuntu/repo.git/
 git push server --all`
-        $('#setupGitRemoteOnClient').text(setupGitRemoteOnClient)
-        Prism.highlightElement($('#setupGitRemoteOnClient')[0]);
-
-        $('#serverDeplymentScript').attr('hidden',false)
+        $(`#${clientMachineID}`).text(setupGitRemoteOnClient)
+        Prism.highlightElement($(`#${clientMachineID}`)[0]);
+        $(`#${containerID}`).attr('hidden', false)
     }
+}
+
+$('#btnGenerateScriptDjango').click(function () {
+    $(`#serverDeploymentScriptForStatic`).attr('hidden', true)
+    collectAndPrepare("setupGitRemoteOnClientDjango","serverDeploymentScriptForDjango")
+})
+
+$('#btnGenerateScriptStatic').click(function () {
+    $(`#serverDeploymentScriptForDjango`).attr('hidden', true)
+    collectAndPrepare("setupGitRemoteOnClientStatic","serverDeploymentScriptForStatic")
+
 })

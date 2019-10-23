@@ -50,7 +50,12 @@
                         <input type="checkbox" class="custom-control-input" id="toggleSwitch">
                         <label class="custom-control-label" for="toggleSwitch" id="toggleSwitchHelp"></label>
                     </div>
-                    <button type="button" class="btn btn-primary mt-2" id="btnGenerateScript">Generate Script</button>
+                    <button type="button" class="btn btn-primary mt-2" id="btnGenerateScriptDjango">Generate for
+                        Django
+                    </button>
+                    <button type="button" class="btn btn-primary mt-2" id="btnGenerateScriptStatic">Generate for
+                        Static
+                    </button>
                 </fieldset>
             </form>
 
@@ -90,7 +95,7 @@
     </div>
 
 </div>
-<div class="container" id="serverDeplymentScript" hidden>
+<div class="container" id="serverDeploymentScriptForDjango" hidden>
     <div class="row">
         <div class="col-md-7 mt-4">
             <h2>Install Postgres on Server</h2>
@@ -113,7 +118,7 @@ sudo apt install postgresql postgresql-contrib</code>
                 </a> [github.com]
             </div>
             <pre>
-<code class="language-shell" id="setupGitRemoteOnClient">
+<code class="language-shell" id="setupGitRemoteOnClientDjango">
 git remote add server ubuntu:/home/ubuntu/repo.git/ &&git push server --all</code>
             </pre>
         </div>
@@ -280,6 +285,101 @@ sudo systemctl restart nginx  # restart the server
 
     </div>
 </div>
+<div class="container" id="serverDeploymentScriptForStatic" hidden>
+    <div class="row">
+        <div class="col-md-7 mt-4">
+            <h2>Install Nginx and git on Server</h2>
+            <div class="helps">
+                <a href="https://www.nginx.com/resources/glossary/nginx/">What is NGINX?</a> [nginx.com]
+            </div>
+            <pre>
+                <code class="language-shell">
+sudo apt update
+sudo apt-get install -y nginx git</code>
+            </pre>
+        </div>
+        <div class="col-md-5 mt-4">
+            <h2>On Your Machine </h2>
+            <div class="helps">
+                <a href="https://help.github.com/en/github/using-git/adding-a-remote">
+                    Adding a Remote on Git
+                </a> [github.com]
+            </div>
+            <pre>
+<code class="language-shell" id="setupGitRemoteOnClientStatic">
+git remote add server ubuntu:/home/ubuntu/repo.git/ &&git push server --all</code>
+            </pre>
+        </div>
+        <div class="col-md-12">
+            <h2>Setting Up folders and Remote Repo </h2>
+            <div class="helps">
+
+            </div>
+            <pre>
+                <code class="language-shell">
+mkdir repo.git app conf
+cd repo.git</code></pre>
+            <pre><code class="language-shell">
+# create a bare repo
+git init --bare
+git --bare update-server-info
+git config core.bare false
+git config receive.denycurrentbranch ignore
+git config core.worktree /home/ubuntu/app/</code></pre>
+            <pre><code class="language-shell">
+cat > hooks/post-receive &lt;&lt;EOF
+#!/bin/sh
+git checkout -f
+EOF</code></pre>
+            <pre><code class="language-shell">
+chmod +x hooks/post-receive
+</code></pre>
+        </div>
+        <div class="col-md-12">
+            <h2>Add Nginx Config </h2>
+            <div class="helps">
+
+            </div>
+            <pre>
+                <code class="language-shell">
+nano nginx.conf  # in conf/ directory</code>
+            </pre>
+            <pre>
+                <code class="language-shell">
+server {
+        listen 80;
+        client_max_body_size 64M;
+
+        # set the correct host(s) for your site
+        # server_name example.com;
+
+        keepalive_timeout 5;
+
+        # path for static files
+        root /home/ubuntu/app;
+        index index.html;
+        location / {
+                try_files $uri $uri/ /index.html;
+        }
+}</code></pre>
+            <h3>Add nginx config to /etc/nginx/nginx.conf</h3>
+            <pre>
+                  <code class="language-shell">
+nano /etc/nginx/nginx.conf
+# include your nginx conf
+# include /home/ubuntu/conf/nginx.conf;
+                  </code></pre>
+            <h3>Test config and restart the server</h3>
+            <pre>
+                  <code class="language-shell">
+sudo nginx -t    # test should be successful
+sudo systemctl restart nginx  # restart the server
+                  </code></pre>
+        </div>
+
+    </div>
+</div>
+
 <!-- Modal for alias generation -->
 <div class="modal fade" id="modalForGeneratingServerAlias" tabindex="-1"
      role="dialog" aria-labelledby="modalForGeneratingServerAlias"
