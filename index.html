@@ -81,6 +81,9 @@
                             data-target="#modalForGeneratingServerAlias">
                         Generate Alias Config
                     </button>
+                    <button type="button" class="btn btn-primary ml-4" id="btnGenerateBashFile">
+                        Download .sh
+                    </button>
                 </fieldset>
             </form>
         </div>
@@ -303,6 +306,7 @@ sudo systemctl restart nginx  # restart the server
 <script>
     let configureWithServerIPHelp = 'Toggle to Configure with Server IP and User instead'
     let configureWithServerAlias = 'Toggle to Configure With Server Alias Instead'
+
     $(function () {
         $('#toggleSwitchHelp').text(configureWithServerIPHelp)
         $('#inputWithServerIPandUser').attr('hidden', true)
@@ -324,6 +328,18 @@ sudo systemctl restart nginx  # restart the server
             $("#modalForGeneratingServerAlias #serverAliasCode").text(aliasGeneratingCode);
             Prism.highlightElement($('#serverAliasCode')[0]);
         })
+        $("#btnGenerateBashFile").click(function () {
+            // TODO: remove this duplicate code
+            let serverIp = $('#serverIP').val()
+            let serverUser = $('#serverUser').val()
+            let keyLocation = $('#keyFileLocation').val()
+            let hostIdentify = $('#hostIdentify').val()
+            if (serverUser && serverUser && keyLocation && hostIdentify) {
+                download(`${hostIdentify}.sh`, `ssh -i ${keyLocation}  ${serverUser}@${serverIp}`)
+            } else {
+                alert("Fill up the Form Correctly Please")
+            }
+        })
     })
     $('#toggleSwitch').change(function () {
         if ($(this).prop('checked') === true) {
@@ -339,6 +355,19 @@ sudo systemctl restart nginx  # restart the server
             $('#inputWithServerAlias').attr('hidden', false)
         }
     })
+
+    function download(filename, text) {
+        var element = document.createElement('a');
+        element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+        element.setAttribute('download', filename);
+
+        element.style.display = 'none';
+        document.body.appendChild(element);
+
+        element.click();
+
+        document.body.removeChild(element);
+    }
 
 </script>
 <script src="assets/deployment.js"></script>
