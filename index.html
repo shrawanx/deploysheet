@@ -266,6 +266,7 @@ server {
         proxy_connect_timeout 600;
         proxy_send_timeout 600;
         proxy_read_timeout 600;
+        # proxy_set_header X-Forwarded-Proto https;
     }
 }</code></pre>
             <h3>Add nginx config to /etc/nginx/nginx.conf</h3>
@@ -280,6 +281,33 @@ nano /etc/nginx/nginx.conf
                   <code class="language-shell">
 sudo nginx -t    # test should be successful
 sudo systemctl restart nginx  # restart the server
+                  </code></pre>
+            <hr>
+            <h1>Extras</h1>
+            <hr>
+            <h3>For HTTPS Part</h3>
+            <pre>
+                  <code class="language-shell">
+sudo add-apt-repository ppa:certbot/certbot
+sudo apt-get update
+sudo apt-get install python-certbot-nginx
+sudo certbot --nginx
+                  </code></pre>
+            <h3>Update nginx Conf </h3>
+            <pre>
+                  <code class="language-shell">
+# include proxy_set_header X-Forwarded-Proto https so your new configuration will look like
+    location / {
+        ........
+        ........
+        proxy_set_header X-Forwarded-Proto https;
+    }
+                  </code></pre>
+            <h3>HTTPS Settings For Django</h3>
+            <pre>
+                  <code class="language-shell">
+USE_X_FORWARDED_HOST = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
                   </code></pre>
         </div>
 
