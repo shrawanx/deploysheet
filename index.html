@@ -112,8 +112,9 @@
             <h2>Install Postgres on Server</h2>
             <div class="helps">
                 <a href="https://www.digitalocean.com/community/tutorials/how-to-install-and-use-postgresql-on-ubuntu-18-04">
-                    How To Install and Use PostgreSQL on Ubuntu 18.04
-                </a> [digitalocean.com]
+                    How To Install and Use PostgreSQL on Ubuntu 18.04 [digitalocean.com]
+                </a> 
+                <a href="#" onclick="postgressHelponConsole()">Show Cheat..</a>
             </div>
             <pre>
                 <code class="language-shell">
@@ -508,6 +509,17 @@ sudo systemctl restart nginx  # restart the server
         document.body.removeChild(element);
     }
 
+</script>
+<script>
+ function postgressHelponConsole(){
+      alert("See console. Happy Coding")
+      console.log(`1.  sudo su postgres
+2.  psql
+3.  CREATE DATABASE database_name;
+4.  CREATE USER my_username WITH PASSWORD 'my_password';
+5.  GRANT ALL PRIVILEGES ON DATABASE "database_name" to my_username;
+`)
+ }
 </script>
 <script src="assets/deployment.js"></script>
 </html>
